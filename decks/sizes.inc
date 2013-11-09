@@ -1,2 +1,10 @@
-.param W=1u
-.param L=1u
+.param W_1  = 2u
+.param W_2  = 10u
+.param W_3  = 33u
+.param W_L1 = 2u
+.param W_L2 = 2u
+.param L_1  = 1u
+.param L_2  = 1u
+.param L_3  = 1u
+.param L_L1 = 1u
+.param L_L2 = 1u

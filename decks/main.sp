@@ -27,12 +27,12 @@ vss vss 0 -2.5
 * Defining the input current source
 
 ** For ac simulation uncomment the following 2 lines**
- Iina		iina	vdd	ac	0.5	
- Iinb		vdd	iinb	ac	0.5	
+*Iina		iina	vdd	ac	0.5	
+*Iinb		vdd	iinb	ac	0.5	
 
 ** For transient simulation uncomment the following 2 lines**
-*Iina		iina	vdd	sin(0 0.5u 1e6)
-*Iinb		vdd	iinb	sin(0 0.5u 1e6)
+Iina		iina	vdd	sin(0 0.5u 1e6)
+Iinb		vdd	iinb	sin(0 0.5u 1e6)
 
 * Defining Input capacitance
 
@@ -72,12 +72,12 @@ ML2b vdd vdd vo2b   vss nmos114 w='W_L2' l='L_L2'
 M3b  vdd vo2b voutb vss nmos114 w='W_3' l='L_3'
 
 *** Your Bias Circuitry here ***
-Ids3a vouta vss 235u 
-Ids2a vs2a vss 40u 
-Ids1a iina vss 40u 
-Ids3b voutb vss 235u 
-Ids2b vs2a vss 40u 
-Ids1b iinb vss 40u 
+Ids3a vouta vss 94.2u 
+Ids2a vs2a vss 53u 
+Ids1a iina vss 53u 
+Ids3b voutb vss 94.2u 
+Ids2b vs2a vss 53u 
+Ids1b iinb vss 53u 
 
 ** for students enrolled in ee114, you can use the given ideal voltage source
 Vbias_n nbias vss 1.4   *replace --- by your value
@@ -92,10 +92,10 @@ Vbias_n nbias vss 1.4   *replace --- by your value
 .option post brief nomod
 
 ** For ac simulation uncomment the following line** 
-.ac dec 10 100 1g
+*.ac dec 100 100 1g
 
 ** For transient simulation uncomment the following line **
-*.tran 0.01u 4u 
-
+.tran 0.01u 4u 
+.probe i(*) v(*)
 .end
 
