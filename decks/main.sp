@@ -75,24 +75,27 @@ M3b  vdd vo2b voutb vss nmos114 w='W_3' l='L_3'
 
 ****Biasing FETs for positive output*****
 .param Id1=8.5u, Id2=17.9u, Id3=170u
-Ids1 iina vss 'Id1'
-Ids2 vs2a vss 'Id2'
-Ids3 vouta vss 'Id3'
-Ids1b iinb vss 'Id1'
-Ids2b vs2a vss 'Id2'
-Ids3b voutb vss 'Id3'
-*Mb1a  iina nbias  vss vss   nmos114 w='W_b1' l='L_b1'
-*Mb2a  vs2a nbias  vss vss   nmos114 w='W_b2' l='L_b2'
-*Mb3a  vouta nbias vss vss   nmos114 w='W_b3' l='L_b3'
+*Ids1 iina vss 'Id1'
+*Ids2 vs2a vss 'Id2'
+*Ids3 vouta vss 'Id3'
+*Ids1b iinb vss 'Id1'
+*Ids2b vs2a vss 'Id2'
+*Ids3b voutb vss 'Id3'
+
+Mb1a  iina nbias  vss vss   nmos114 w='W_b1' l='L_b1'
+Mb2a  vs2a nbias  vss vss   nmos114 w='W_b2' l='L_b2'
+Mb3a  vouta nbias vss vss   nmos114 w='W_b3' l='L_b3'
 *
 ****Biasing FETs for negative output same sizes as correspiding biasing fets on positive side*****
 *
-*Mb1b  iinb nbias  vss vss   nmos114 w='W_b1' l='L_b1'
-*Mb2b  vs2a nbias  vss vss   nmos114 w='W_b2' l='L_b2'
-*Mb3b  voutb nbias vss vss   nmos114 w='W_b3' l='L_b3'
+Mb1b  iinb nbias  vss vss   nmos114 w='W_b1' l='L_b1'
+Mb2b  vs2a nbias  vss vss   nmos114 w='W_b2' l='L_b2'
+Mb3b  voutb nbias vss vss   nmos114 w='W_b3' l='L_b3'
 *
 ** Reference device
-*Mdrv  nbias nbias vss vss      nmos114 w=16u l=2u
+Mdrv  nbias nbias vss vss      nmos114 w='W_Mdr' l='L_Mdr'
+Rref  vdd nbias 300e3
+
 *
 *** for students enrolled in ee114, you can use the given ideal voltage source
 *Vbias_n nbias gnd -1.6724

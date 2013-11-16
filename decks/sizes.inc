@@ -9,9 +9,11 @@
 .param L_L1 = 1u
 .param L_L2 = 1u
 * Current Bias 
-.param W_b1 = 19u
-.param W_b2 = 14u
-.param W_b3 = 105u
+.param W_b1 = 2u
+.param W_b2 = 2u
+.param W_b3 = 34u
 .param L_b1 = 2u
 .param L_b2 = 2u
 .param L_b3 = 2u
+.param W_Mdr = 4u
+.param L_Mdr = 2u
