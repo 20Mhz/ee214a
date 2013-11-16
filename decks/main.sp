@@ -74,7 +74,7 @@ M3b  vdd vo2b voutb vss nmos114 w='W_3' l='L_3'
 *** Your Bias Circuitry here ***
 
 ****Biasing FETs for positive output*****
-.param Id1=9u, Id2=18.6u, Id3=170u
+.param Id1=8.5u, Id2=17.9u, Id3=170u
 Ids1 iina vss 'Id1'
 Ids2 vs2a vss 'Id2'
 Ids3 vouta vss 'Id3'
@@ -112,5 +112,9 @@ Ids3b voutb vss 'Id3'
 ** For transient simulation uncomment the following line **
 .tran 0.01u 4u 
 .probe i(*) v(*)
+* Other Measurements
+.meas ac gain MAX VDB(vouta)
+.meas ac freq3db when VDB(vouta) = 'gain-3'
+.meas ac gain_ohm param='10^(gain/20)'
 .end
 
