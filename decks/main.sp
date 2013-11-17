@@ -1,14 +1,7 @@
-* Design Problem, ee114/214A- 2012
-* Please fill in the specification achieved by your circuit 
-* before your submit the netlist.
-**************************************************************
-* The specifications that this script achieves are:
-* 
-* Power  =    mW 
-* Gain   =    K
-* BandWidth =   MHz
-***************************************************************
-
+*Name: Ronald Valenzuela and Hari Vemuri 
+*Power: 2.093 
+*Gain: 15.182
+*Bandwidth: 92.22
 
 ** Including the model file
 .include /usr/class/ee114/hspice/ee114_hspice.sp
