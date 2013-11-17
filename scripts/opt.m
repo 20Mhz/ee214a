@@ -83,8 +83,8 @@ sprintf('.param W_1=%du\n.param W_2=%du\n.param W_3=%du\n.param W_L1=%du\n.param
 %has as current source to the drain
 
 %biasing circuot 
-Iref = 18e-6;
-W_dr = 4e-6;
+Iref = 21e-6;
+W_dr = 5e-6;
 L_dr = 2e-6;
 vdd=2.5;
 vt=0.5;

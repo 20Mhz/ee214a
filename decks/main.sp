@@ -93,8 +93,10 @@ Mb2b  vs2a nbias  vss vss   nmos114 w='W_b2' l='L_b2'
 Mb3b  voutb nbias vss vss   nmos114 w='W_b3' l='L_b3'
 *
 ** Reference device
-Mdrv  nbias nbias vss vss      nmos114 w='W_Mdr' l='L_Mdr'
-Rref  vdd nbias 300e3
+Mdrv  nbias nbias vss vss      nmos114 w ='W_Mdr' l='L_Mdr'
+Mdrv1  nbias1 nbias1 vdd vdd   pmos114 w = 2u l= 2u
+Mdrv2  nbias nbias nbias1 vdd  pmos114 w = 2u l= 2u
+*Rref  vdd nbias 186e3
 
 *
 *** for students enrolled in ee114, you can use the given ideal voltage source
