@@ -77,11 +77,30 @@ sprintf('.param W_1=%du\n.param W_2=%du\n.param W_3=%du\n.param W_L1=%du\n.param
 
 %the gate bias for curent mirrors is set by a diode connected NMOS which
 %has as current source to the drain
-Wdriver=16e-6;
-Ldriver=2e-6;
-vss =-2.5;
-vov_driver_mos= sqrt(Id2/(0.5*(Wdriver/Ldriver)*uCox));
-vbiasgen=vov_driver_mos+0.5+vss
+
+%biasing circuot 
+Iref = 21e-6;
+W_dr = 5e-6;
+L_dr = 2e-6;
+vdd=2.5;
+vt=0.5;
+vss = -2.5;
+Vov_pmos = -1;
+
+Iref_actual= (uCox/4)*(W_dr/L_dr)*(Vov_pmos)^2;
+vov_dr= sqrt((2*Iref)/(uCox*(W_dr/L_dr)));
+vds_pmos= 2.5-vov_dr+vss;
+Lmin_cs=2e-6;
+vbiasgen = vov_dr+0.5+vss;
+res =(vdd-vbiasgen)/Iref;
+
+Mb1_ratio= round(Id1/((uCox/2)*(vbiasgen-vss-vt)^2));
+Mb2_ratio= round(Id2/((uCox/2)*(vbiasgen-vss-vt)^2));
+Mb3_ratio= round(Id3/((uCox/2)*(vbiasgen-vss-vt)^2));
+
+Mb1_Width = Mb1_ratio*Lmin_cs;
+Mb2_Width= Mb2_ratio*Lmin_cs;
+Mb3_Width = Mb3_ratio*Lmin_cs;
 
 % Bias source sizing based on current requirements
 Wb1_ratio= round(Id1/((uCox/2)*(vbiasgen-vss-0.5)^2)*2);
@@ -232,6 +251,12 @@ return
 %%
 
 f3db = 1/(tau_total*2*pi);
+
+
+
+
+
+
 
 
 %%
