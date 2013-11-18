@@ -18,30 +18,26 @@ lambda=0.1;
 VDD= 2.5;
 
 % Constraints
-freq_target = 100e6; % > 90
-power_target = 2e-3; % 5v * Itotal
-I_total = 2e-3/5; % 400uA
-Rspec=15e3/2;
-% Initial Estimations
-VOV3=0.2;
+freq_target = 90e6; % > 90
+power_target = 2.25e-3; % 5v * Itotal
+I_total = 2e-3/5 % 400uA
+Aspec=15e3;
 
-%% gm3
+%% Initial Estimations
+VOV3=0.2; % Will multiply the bigger current
+
+% Id3 & gm3
 tau_target=1/(freq_target*2*pi); % Total available Tau
-tau_target_out=0.4*tau_target; % Guess tau out = 10% of tau Total
+tau_target_out=0.35*tau_target; % Guess tau out = 35% of tau Total
 gm3 = (Cl/tau_target_out);
 Id3 = VOV3*gm3/2 % 
 
 % Set Id2 & 3 based on budget
-Id2= (I_total-2*Id3)/4*3/5% 
-Id1= (I_total-2*Id3)/4*2/5%
-% 7.9530u  177.2793u   37.8186u
-%Id3 = 177e-6
-%Id2 = 6.4e-6
-%Id1 = 18e-6 % Fixed by exploration
-%Id2 = 5.6e-6
-%Id3 = 140e-6
+Id2= (I_total-2*Id3)/4*3/4% Needs high gm2 
+Id1= (I_total-2*Id3)/4*1/4% 
+
 %% gm_l2
-Vg3 = VOV3 + 0 + Vtn; 
+Vg3 = VOV3 + 0 + Vtn; % DC Output requirement (close to 0)
 VOV_L2 = (VDD - Vg3 - Vtn);
 gm_l2 = (2*Id2/VOV_L2)/1.2;
 R_l2 = 1/gm_l2;
@@ -52,14 +48,14 @@ gm_l1 = 2*Id1/VOV_L1;
 R_l1 = 1/gm_l1;
 
 %% gm2
-gm2 = Rspec/(R_l1*R_l2);
-VOV2= 2*Id2/gm2;
-VOV2=0.2;
+gm2 = Aspec/(R_l1*R_l2*0.8);
+VOV2= 2*Id2/gm2
+%VOV2=0.2;
 %gm2 = 2*Id2/VOV2;
 
 %% gm1
-VOV1BIAS=1;
-VOV1 = 0 - (VOV1BIAS-2.5)- Vtn;
+VOV1BIAS=1.3;
+VOV1 = 0 - (VOV1BIAS-2.5)- Vtn
 gm1 = 2* Id1/VOV1;
 
 % Core Transistor Sizing
@@ -93,11 +89,6 @@ Wb2_ratio= round(Id2/((uCox/2)*(vbiasgen-vss-0.5)^2)*2);
 Wb3_ratio= round(Id3/((uCox/2)*(vbiasgen-vss-0.5)^2)*2);
 sprintf('.param WB1=%du\n.param WB2=%du\n.param WB3=%du',Wb1_ratio,Wb2_ratio,Wb3_ratio)
 
-%fprintf(Mb2_ratio);
-
-
-% Craete spice file 
-% fwrite(fid, evalc('disp(M3)'))
 
 %% ZVTC based Models 
 
@@ -119,122 +110,21 @@ G = C+D;
 H = E + 1/6;
 
 % Tau 
-Aspec = 10e3;
 t0_vov = (2*Lmin^2)/(3*mu_n); % T0 by Vov 
-tau_in =  (Cin + A*2*Id1/VOV1^2 * t0_vov) /(1.2*gm1)
-tau_out = ( 5*2*Id3/VOV3^2 *t0_vov + 6*Cl/5)/gm3
-tau_core = 2 * t0_vov * VOV2*( Aspec/0.8 * ( B* Id1/VOV1^2 + (F+C*VOV_L2/VOV2)*Id2/VOV2^2) + VOV_L2/(2*Id2)*(G*Id2/VOV2^2 + H*Id3/VOV3^2))
+tau_in = 5/6*(Cin*VOV1/2/Id1 + A*t0_vov/VOV1)
+tau_out = 5/6*(t0_vov/VOV3 + VOV3*Cl/2/Id3)
+tau_core = 2 * t0_vov * VOV2.*( Aspec/0.8 * ( B* Id1./VOV1^2 + (F+C*VOV_L2/VOV2)*Id2./VOV2^2) + VOV_L2./(2*Id2).*(G*Id2./VOV2^2 + H*Id3/VOV3^2))
 tau_total = tau_in + tau_out + tau_core;
 f3db = 1/(tau_total*2*pi)
-return
-%% Exploration of VOV3
-VOV3=[0.15:.001:2];
-tau_core = 2 * t0_vov * VOV2*( Aspec/0.8 * ( B* Id1/VOV1^2 + (F+C*VOV_L2/VOV2)*Id2/VOV2^2) + VOV_L2/(2*Id2)*(G*Id2/VOV2^2 + H*Id3./VOV3.^2));
-plot(VOV3,tau_core);
-%% Exploration of VOV2 VOV1
 
-VO2=[0.15:0.01:6];
-VO1=[0.15:0.01:6];
-
-%tau_core = 2 * t0_vov * VOV2.*( Aspec/0.8 * ( B* Id1/VOV1^2 + (F+C*VOV_L2/VOV2).*Id2/VOV2^2) + VOV_L2./(2*Id2).*(G*Id2/VOV2^2 + H*Id3/VOV3^2));
-[VOV_L1,VOV_L2] = meshgrid(VO1,VO1);
-
-
-tau_in =  (Cin + A*2*Id1./VOV1^2 * t0_vov) ./(1.2*2*Id1)*VOV1; 
-tau_out = ( 5*2*Id3./VOV3^2 *t0_vov + 6*Cl/5)*VOV3./(2*Id3);
-tau_core = 2 * t0_vov * VOV2.*( Aspec/0.8 * ( B* Id1./VOV1^2 + (F+C*VOV_L2./VOV2)*Id2./VOV2^2) + VOV_L2./(2*Id2).*(G*Id2./VOV2^2 + H*Id3./VOV3^2));
-
-mesh(VO1,VO2,tau_core./max(max(tau_core)));
-
-title ('Tau(Id1,Id2)');
-xlabel('VOV1')
-ylabel('VOV2')
-%% Exloration of Id1
-Id2=[4e-6:0.1e-6:8e-6];
-Id1=400e-6 - 2*Id3 - 2*Id2;
-
-%tau_core = 2 * t0_vov * VOV2.*( Aspec/0.8 * ( B* Id1/VOV1^2 + (F+C*VOV_L2/VOV2).*Id2/VOV2^2) + VOV_L2./(2*Id2).*(G*Id2/VOV2^2 + H*Id3/VOV3^2));
-[I1,I2] = meshgrid(Id1,Id2);
-
-tau_core = 2 * t0_vov * VOV2.*( Aspec/0.8 * ( B* I1./VOV1^2 + (F+C*VOV_L2/VOV2)*I2./VOV2^2) + VOV_L2./(2*I2).*(G*I2./VOV2^2 + H*Id3/VOV3^2));
-
-mesh(Id1,Id2,tau_core./max(max(tau_core)));
-
-title ('Tau(Id1,Id2)');
-xlabel('Id1')
-ylabel('ID2')
-%% Reexploration of Id1
-Id1=[0e-6:0.1e-6:50e-6];
-
-tau_in =  (Cin + A*2*Id1./VOV1^2 * t0_vov) ./(1.2*2*Id1)*VOV1; 
-tau_out = ( 5*2*Id3./VOV3^2 *t0_vov + 6*Cl/5)*VOV3./(2*Id3);
-tau_core = 2 * t0_vov * VOV2.*( Aspec/0.8 * ( B* Id1./VOV1^2 + (F+C*VOV_L2./VOV2)*Id2./VOV2^2) + VOV_L2./(2*Id2).*(G*Id2./VOV2^2 + H*Id3./VOV3^2));
-
-plot(Id1,tau_core);
-%% Exloration of Id3
-%Id3=[170e-6 - 100e-6 : 1e-6: 170e-6 + 850e-6];;  Id1=72e-6;
-%Id2=[17.9e-6 - 10e-6 : 1e-6: 17.9e-6 + 175e-6];
-Id3=[170e-6 - 70e-6 : 1.5e-6: 200e-6];;  
-Id2=[3e-6: 1e-6: 20e-6 + 40e-6]; % 
-Id1=8.5e-6;
-VOV_L1=0.3832;
-VOV1=0.154;
-VOV2=0.282;
-VOV_L2=0.393;
-VOV3=0.346; 
-
-[I3,I2] = meshgrid(Id3,Id2);
-
-tau_in = 5/6*(Cin*VOV1/2/Id1 + A*t0_vov/VOV1);
-tau_out = 5/6*(t0_vov/VOV3 + VOV3*Cl/2./I3);
-tau_core = 2 * t0_vov * VOV2.*( Aspec/0.8 * ( B* Id1./VOV1^2 + (F+C*VOV_L2/VOV2)*I2./VOV2^2) + VOV_L2./(2*I2).*(G*I2./VOV2^2 + H*I3/VOV3^2));
-tau_total = tau_in + tau_out + tau_core;
-mesh(Id3,Id2,tau_total./max(max(tau_total)))
-
-%mesh(Id3,Id2,tau_core./max(max(tau_core)));
-title ('Tau(Id3,Id2)');
-xlabel('Id3')
-ylabel('Id2')
 %% Fine tuning 
-Id1=[8.5e-6 - 5e-6 : 1e-6: 8.5e-6 + 95e-6];
-%Id2=[17.9e-6 - 15e-6 : 0.1e-6: 17.9e-6 + 15e-6];
-Id2=[42.9e-6 - 40e-6 : 1e-6: 42.9e-6 + 56e-6]; 
-%Id3=70e06;
-Id3=420e-6;
-VOV_L1=0.3832;
-VOV1=0.154;
-VOV2=0.282;
-VOV_L2=0.393;
-VOV3=0.346;
- 
-[I1,I2] = meshgrid(Id1,Id2);
-
-tau_in = 5/6*(Cin*VOV1/2./I1 + A*t0_vov/VOV1);
-tau_out = 5/6*(t0_vov/VOV3 + VOV3*Cl/2./Id3);
-tau_core = 2 * t0_vov * VOV2.*( Aspec/0.8 * ( B* I1./VOV1^2 + (F+C*VOV_L2/VOV2)*I2./VOV2^2) + VOV_L2./(2*I2).*(G*I2./VOV2^2 + H*Id3/VOV3^2));
-tau_total = tau_in + tau_out + tau_core;
-mesh(Id1,Id2,tau_total./max(max(tau_total)));
-
-%gain=VOV_L1./(2*I1).*VOV_L2./(VOV2)*0.8; 
-
-%figure(1);
-%mesh(Id1,Id2,tau_total./max(max(tau_total)));
-%mesh(Id1,Id2,tau_in./max(max(tau_in)));
-%mesh(Id1,Id2,tau_core);
-title ('Tau(Id1,Id2)');
-xlabel('Id1')
-ylabel('Id2') 
-
-%%
-clc;
 Id1=8.5e-6; Id2=17.9e-6; Id3=170e-6;
 VOV_L1=0.3832;
 VOV1=0.154;
 VOV2=0.2819;
 VOV_L2=0.393;
-VOV3=0.346; 
-%tau_in =  (Cin + A*2*Id1./VOV1^2 * t0_vov) ./(1.2*2*Id1)*VOV1 
-%tau_out = ( 5*2*Id3/VOV3^2 *t0_vov + 6*Cl/5)*VOV3./(2*Id3)
+VOV3=0.346;  
+
 tau_in = 5/6*(Cin*VOV1/2/Id1 + A*t0_vov/VOV1)
 tau_out = 5/6*(t0_vov/VOV3 + VOV3*Cl/2/Id3)
 tau_core = 2 * t0_vov * VOV2.*( Aspec/0.8 * ( B* Id1./VOV1^2 + (F+C*VOV_L2/VOV2)*Id2./VOV2^2) + VOV_L2./(2*Id2).*(G*Id2./VOV2^2 + H*Id3/VOV3^2))
@@ -242,26 +132,103 @@ tau_total = tau_in + tau_out + tau_core
 f3db = 1/(tau_total*2*pi)
 gain=VOV_L1./(2*Id1).*VOV_L2./VOV2*(0.8)^2
 
-%% VOV tuning
+%% Id Tuning 
+
+VOV_L1=0.3832; VOV1=0.154; VOV2=0.2819; VOV_L2=0.393; VOV3=0.346;
+Id3=170e-6;
+Id1=[8.5e-6 - 1e-6 : .05e-6: 8.5e-6 + 6e-6]; 
+Id2=[17.9e-6 - 14e-6 : .05e-6: 17.9e-6 + 1e-6]; 
+ 
+[I1,I2] = meshgrid(Id1,Id2);
+
+tau_in = 5/6*(Cin*VOV1./2./I1 + A*t0_vov./VOV1);
+tau_out = 5/6*(t0_vov./VOV3 + VOV3*Cl/2/Id3);
+tau_core = 2 * t0_vov * VOV2.*( Aspec/0.8 * ( B* I1./VOV1.^2 + (F+C*VOV_L2./VOV2)*I2./VOV2.^2) + VOV_L2./(2*I2).*(G*I2./VOV2.^2 + H*Id3./VOV3.^2));
+tau_total = tau_in + tau_out + tau_core;
+
+gain_i1=VOV_L1./(2*Id1).*VOV_L2./VOV2*(0.8)^2;
+
+figure(1);
+subplot(3,1,1); 
+plot(Id1,gain_i1, Id1, Aspec*ones(1,length(Id1))); 
+title ('Gain (Id1)');
+xlabel('Id1')
+ylabel('Gain');
+
+subplot(3,1,2);
+mesh(Id1,Id2,tau_total./max(max(tau_total)));
+title ('Tau(Id1,Id2, Id3=170um)');
+xlabel('Id1')
+ylabel('Id2') 
+
+
+Id3=[170e-6 - 70e-6 : 0.5e-6: 200e-6]; Id1=8.5e-6;
+Id2=[17.9e-6 - 16e-6 : .1e-6: 17.9e-6 + 1e-6]; 
+[I2,I3] = meshgrid(Id2,Id3);
+
+tau_in = 5/6*(Cin*VOV1./2./Id1 + A*t0_vov./VOV1);
+tau_out = 5/6*(t0_vov./VOV3 + VOV3*Cl/2./I3);
+tau_core = 2 * t0_vov * VOV2.*( Aspec/0.8 * ( B* Id1./VOV1.^2 + (F+C*VOV_L2./VOV2)*I2./VOV2.^2) + VOV_L2./(2*I2).*(G*I2./VOV2.^2 + H*I3./VOV3.^2));
+tau_total = tau_in + tau_out + tau_core;
+
+subplot(3,1,3);
+mesh(Id2,Id3,tau_total./max(max(tau_total)));
+title ('Tau(Id2,Id3, Id1=8.5um)');
+xlabel('Id2')
+ylabel('Id3') 
+
+figureHandle = gcf; 
+set(findall(figureHandle,'type','text'),'fontSize',16,'fontWeight','bold')
+
+% VOV 1-2 tuning
 Id1=8.5e-6; Id2=17.9e-6; Id3=170e-6;
 VOV_L1=0.3832;
-VOV1=0.154;
-VOV2=[0.15:0.1:4];
-VOV_L2=0.393;
-VOV3=[0.15:0.1:4]; 
+VOV_L2=0.393; 
+VOV3=0.237;% 0.321<- actual opt; model ?0.237
 
-[VO2,VO3] = meshgrid(VOV2,VOV3);
+VOV1=[0.15:0.001:0.17];
+VOV2=[0.1:0.001:0.5]; 
+[VO1,VO2] = meshgrid(VOV1,VOV2);
 
-tau_in = 5/6*(Cin*VOV1/2/Id1 + A*t0_vov/VOV1);
-tau_out = 5/6*(t0_vov./VO3 + VO3*Cl/2/Id3);
-tau_core = 2 * t0_vov * VO2.*( Aspec/0.8 * ( B* Id1./VOV1^2 + (F+C*VOV_L2./VO2)*Id2./VO2.^2) + VOV_L2./(2*Id2).*(G*Id2./VO2.^2 + H*Id3./VO3.^2));
+tau_in = 5/6*(Cin*VO1./2/Id1 + A*t0_vov./VO1);
+tau_out = 5/6*(t0_vov./VOV3 + VOV3*Cl/2/Id3);
+tau_core = 2 * t0_vov * VO2.*( Aspec/0.8 * ( B* Id1./VO1.^2 + (F+C*VOV_L2./VO2)*Id2./VO2.^2) + VOV_L2./(2*Id2).*(G*Id2./VO2.^2 + H*Id3./VOV3.^2));
 tau_total = tau_in + tau_out + tau_core;
-figure(1);
-mesh(VOV2,VOV3,tau_total./max(max(tau_total)));
+gain_vo2=VOV_L1./(2*Id1).*VOV_L2./VOV2*(0.8)^2;
 
-gain=VOV_L1./(2*Id1).*VOV_L2./VOV2*(0.8)^2
 figure(2);
-plot(VOV2,gain);
+
+subplot(3,1,1);
+plot(VOV2,gain_vo2,VOV2, Aspec*ones(1,length(VOV2)));
+title ('Gain (VOV2)');
+xlabel('VOV2')
+ylabel('Gain');
+
+subplot(3,1,2);
+mesh(VOV1,VOV2,tau_total./max(max(tau_total)));
+title ('Tau(VOV1,VOV2, VOV3=0.237)');
+xlabel('VOV1')
+ylabel('VOV2') 
+
+VOV1=0.15;
+VOV3=[0.15:0.001:0.4]; 
+VOV2=[0.1:0.001:0.4];
+[VO2,VO3] = meshgrid(VOV2,VOV3);
+tau_in = 5/6*(Cin*VOV1./2/Id1 + A*t0_vov./VOV1);
+tau_out = 5/6*(t0_vov./VO3 + VO3*Cl/2/Id3);
+tau_core = 2 * t0_vov * VO2.*( Aspec/0.8 * ( B* Id1./VOV1.^2 + (F+C*VOV_L2./VO2)*Id2./VO2.^2) + VOV_L2./(2*Id2).*(G*Id2./VO2.^2 + H*Id3./VO3.^2));
+tau_total = tau_in + tau_out + tau_core;
+
+subplot(3,1,3);
+mesh(VOV2,VOV3,tau_total./max(max(tau_total)));
+title ('Tau(VOV2,VOV3, VOV1=0.15)');
+xlabel('VOV2')
+ylabel('VOV3')
+ 
+figureHandle = gcf; 
+set(findall(figureHandle,'type','text'),'fontSize',16,'fontWeight','bold')
+return
+
 %%
 
 f3db = 1/(tau_total*2*pi);
