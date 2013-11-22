@@ -2,6 +2,9 @@
 *Power: 2.093 
 *Gain: 15.182
 *Bandwidth: 92.22
+*I1: 8.7
+*I2: 18.1
+*I3: 171.6
 
 ** Including the model file
 .include /usr/class/ee114/hspice/ee114_hspice.sp
@@ -26,6 +29,10 @@ vss vss 0 -2.5
 ** For transient simulation uncomment the following 2 lines**
 Iina		iina	vdd	sin(0 0.5u 1e6) ac 0.5
 Iinb		vdd	iinb	sin(0 0.5u 1e6) ac 0.5
+** For transient simulation uncomment the following 2 lines**
+* Large signal 2.5uA / 1MHz 
+*Iina		iina	vdd	sin(0 2.5u 1e6) ac 0.5
+*Iinb		vdd	iinb	sin(0 2.5u 1e6) ac 0.5
 
 * Defining Input capacitance
 
@@ -38,7 +45,27 @@ RL	vouta		voutb		'RL'
 CL	vouta		voutb		'CL'
 
 *** Your Trans-impedance Amplifier here ***
-.include './sizes.inc'
+
+* Fixed sizes for Core circuit 
+.param W_1  = 12u
+.param W_2  = 7u
+.param W_3  = 51u
+.param W_L1 = 2u
+.param W_L2 = 4u 
+.param L_1  = 1u
+.param L_2  = 1u
+.param L_3  = 1u
+.param L_L1 = 1u
+.param L_L2 = 1u
+* Fixed sizes for Bias Circuit 
+.param W_b1 = 2u
+.param W_b2 = 4u
+.param W_b3 = 38u
+.param L_b1 = 2u
+.param L_b2 = 2u
+.param L_b3 = 2u
+.param W_Mdr = 5u
+.param L_Mdr = 2u
 
 *Plus side
 *CG
@@ -67,7 +94,9 @@ M3b  vdd vo2b voutb vss nmos114 w='W_3' l='L_3'
 *** Your Bias Circuitry here ***
 
 ****Biasing FETs for positive output*****
-.param Id1=8.5u, Id2=17.9u, Id3=170u
+
+* Ideal current sources for exploration
+*.param Id1=8.5u, Id2=17.9u, Id3=170u
 *Ids1 iina vss 'Id1'
 *Ids2 vs2a vss 'Id2'
 *Ids3 vouta vss 'Id3'
@@ -75,6 +104,7 @@ M3b  vdd vo2b voutb vss nmos114 w='W_3' l='L_3'
 *Ids2b vs2a vss 'Id2'
 *Ids3b voutb vss 'Id3'
 
+* Bias Circuit
 Mb1a  iina nbias  vss vss   nmos114 w='W_b1' l='L_b1'
 Mb2a  vs2a nbias  vss vss   nmos114 w='W_b2' l='L_b2'
 Mb3a  vouta nbias vss vss   nmos114 w='W_b3' l='L_b3'
